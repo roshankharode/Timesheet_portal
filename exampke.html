@@ -1,0 +1,160 @@
+import React, { Component } from "react";
+import axios from "axios";
+import authHeader from "../services/auth-header";
+import { Link } from "react-router-dom";
+export default class AddPackage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      packageName: "",
+      description: "",
+      fare: "",
+      AllPackages: [],
+    };
+  }
+
+  componentDidMount() {
+    axios
+      .get("http://localhost:8090/api/packages/viewAllPackages", {
+        headers: authHeader(),
+      })
+      .then((response) => {
+        this.setState({ AllPackages: response.data });
+      });
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(this.state);
+    axios
+      .post("http://localhost:8090/api/packages/addPackage", this.state,{
+        headers: authHeader(),
+      })
+      .then((res) => {
+        alert("Added Succesfully");
+        window.location.reload(false);
+      })
+      .catch((error) => {});
+  };
+
+  handler = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  deletebook = (packageId) => {
+    axios
+      .delete("http://localhost:8090/api/packages/deletePackage/" + packageId, {
+        headers: authHeader(),
+      })
+      .then(
+        (response) => {
+          alert("Package Deleted");
+          window.location.reload(false);
+        },
+        (error) => {
+          window.location.reload(false);
+          alert("Operation failed");
+        }
+      );
+  };
+
+  render() {
+    return (
+      <div>
+        <h3 style={{ textAlign: "center" }} id="bookback">
+          Add Package
+        </h3>
+        <div className="regi">
+          <form>
+            <div className="row">
+              <div className="col">
+                <input
+                  style={{ marginBottom: "9px" }}
+                  type="text"
+                  className="form-control"
+                  placeholder="package Name "
+                  value={this.state.packageName}
+                  name="packageName"
+                  onChange={this.handler}
+                />
+                <input
+                  style={{ marginBottom: "9px" }}
+                  type="text"
+                  className="form-control"
+                  placeholder="Description "
+                  value={this.state.description}
+                  name="description"
+                  onChange={this.handler}
+                />
+                <input
+                  style={{ marginBottom: "9px" }}
+                  type="Number"
+                  className="form-control"
+                  placeholder=" fare "
+                  value={this.state.fare}
+                  name="fare"
+                  onChange={this.handler}
+                />
+              </div>
+            </div>
+            <div class="text-center" id="btns">
+              <button
+                type="button"
+                class="btn btn-primary "
+                onClick={this.handleSubmit}
+              >
+                Add Package
+              </button>
+            </div>
+          </form>
+        </div>
+        <div>
+          <div>
+            <table className="table table-striped">
+              <thead class="table-primary">
+                <tr>
+                  <th scope="col">Package Id</th>
+                  <th scope="col">Package Name</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Fare</th>
+                  <th scope="col"> Update</th>
+                  <th scope="col"> Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.AllPackages.map((pkg) => (
+                  <tr key={pkg.packageId}>
+                    <td>{pkg.packageId}</td>
+                    <td>{pkg.packageName}</td>
+
+                    <td>{pkg.description} </td>
+                    <td>{pkg.fare}</td>
+                    <td>
+                      <Link
+                        to={`/updatepkg/${pkg.packageId}`}
+                        class="btn btn-info "
+                      >
+                        Update
+                      </Link>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn-danger "
+                        onClick={() => {
+                          this.deletebook(pkg.packageId);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
